@@ -3,13 +3,13 @@ import Link from "next/link";
 
 const Header = () => {
   return (
-    <div className="">
-      <div className="max-w-[1200px] w-[75%] mx-auto flex justify-center mb-10">
+    <div className="py-5 bg-zinc-100">
+      <div className="max-w-[1200px] w-[95%] mx-auto flex justify-center">
         <Link href={"/"}>
           <Image
-            src={"/pokemon2.svg"}
-            width={250}
-            height={100}
+            src={"/pokemon4.svg"}
+            width={300}
+            height={150}
             alt="Pokedex Logo"
           />
         </Link>

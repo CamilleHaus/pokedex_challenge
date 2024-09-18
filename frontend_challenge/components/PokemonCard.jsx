@@ -1,25 +1,18 @@
 import { useEffect, useState } from "react";
-import { useAnimation, motion } from "framer-motion";
 import Image from "next/image";
 import Type from "./Type";
+import { Card, Col } from "antd";
+
+export const formatPokemonNumber = (number) => {
+  return `#${String(number).padStart(4, "0")}`;
+};
 
 const PokemonCard = ({ pokemon }) => {
   const [data, setData] = useState(null);
-  const [isFlipped, setIsFlipped] = useState(false);
-
-  const controls = useAnimation();
 
   const getPokemonNumberFromUrl = (url) => {
     const matches = url.match(/\/(\d+)\/$/);
     return matches ? matches[1] : null;
-  };
-
-  const pokemonNumber = getPokemonNumberFromUrl(pokemon.url);
-
-  const flipCard = async () => {
-    setIsFlipped(!isFlipped);
-
-    await controls.start({ rotateY: isFlipped ? 0 : 180 });
   };
 
   useEffect(() => {
@@ -27,95 +20,92 @@ const PokemonCard = ({ pokemon }) => {
       try {
         const response = await fetch(pokemon.url);
         if (!response.ok) {
-          throw new Error("Failed to fetch");
+          throw new Error("Failed to fetch Pokémon data");
         }
-
-        const fetchData = await response.json();
-        setData(fetchData);
+        const fetchedData = await response.json();
+        setData(fetchedData);
       } catch (error) {
         console.log(error);
-        return null;
+        // You can set data to null or show an error message here if needed
       }
     };
 
     fetchPokemonData();
   }, [pokemon.url]);
 
-  const formatPokemonNumber = (number) => {
-    return `#${String(number).padStart(4, "0")}`;
-  };
+  if (!data) {
+    return <p>Loading...</p>;
+  }
+
+  const pokemonNumber = getPokemonNumberFromUrl(pokemon.url);
 
   const formatMeasurement = (value, unit) => {
     return `${value} ${unit}`;
   };
 
+  console.log(pokemon);
+
   return (
-    <div>
-      <div className="flex items-center justify-center flex-col relative">
-        <motion.div
-          className="cursor-pointer"
-          animate={controls}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={flipCard}
-        >
-          <motion.div
-            className="bg-gray-700 flex items-center rounded-md p-1 relative"
-            initial={{ rotateY: 0 }}
-            variants={{
-              front: { rotateY: 0 },
-              back: { rotateY: 180 },
-            }}
-            animate={isFlipped ? "back" : "front"}
-          >
-            <div className="absolute top-0 left-0 font-bold p-3 text-5xl">
-              {!isFlipped && formatPokemonNumber(pokemonNumber || "")}
-            </div>
-            {!isFlipped ? (
+    <Col className="mb-4">
+      <Card className="bg-zinc-100 p-0">
+        <div className="flex items-center justify-center flex-col">
+          <div className="border border-b rounded-md w-full flex flex-col items-center">
+            <div className=" w-full flex justify-center items-center bg-zinc-50">
               <Image
                 src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/${pokemonNumber}.png`}
                 width={220}
-                height={220}
+                height={150}
                 alt="Pokemon Image"
-                className="z-[9999]"
               />
-            ) : (
-              <div className="w-[220px] h-[220px] bg-gray-700 rounded-lg flex items-center justify-center">
-                <div className="text-white flex flex-col gap-2">
-                  <p className="bg-blue-800 px-2 rounded-md">
-                    Height:{" "}
-                    {data.height &&
-                      formatMeasurement(data.height / 10, "meters")}{" "}
-                  </p>
-                  <p className="bg-blue-800 px-2 rounded-md">
-                    Weight:{" "}
-                    {data.weight && formatMeasurement(data.weight / 10, "kg")}{" "}
-                  </p>
-                  <div className="flex flex-col text-center">
-                    <h3 className="font-bold text-xl underline">Abilities</h3>
+            </div>
+            <div className="flex flex-col items-center justify-center bg-white w-full">
+              <p className="py-2 uppercase font-bold bg-gray-800 text-white w-full text-center">
+                {pokemon.name}
+              </p>
+              <div className="text-white flex flex-col gap-2 w-full px-4">
+                <div className="flex flex-col">
+                  <div className="flex justify-between py-2 text-lg">
+                    <h3 className="font-bold text-black">Abilities</h3>
+                    <p className="text-zinc-800">
+                      {formatPokemonNumber(pokemonNumber)}
+                    </p>
+                  </div>
+                  <div className="flex gap-3 pb-2 flex-wrap">
                     {data.abilities &&
                       data.abilities.map((ability, index) => (
-                        <span key={index}>{ability.ability.name}</span>
+                        <span
+                          className="text-black bg-zinc-50 rounded-md py-2 px-3 capitalize"
+                          key={index}
+                        >
+                          {ability.ability.name}
+                        </span>
                       ))}
                   </div>
                 </div>
+                <div className="flex text-black justify-between w-full gap-3">
+                  <p className="py-2 rounded-md border border-zinc-200 flex-1 text-center">
+                    Height:{" "}
+                    {data.height && formatMeasurement(data.height / 10, "m")}
+                  </p>
+                  <p className="py-2 rounded-md border border-zinc-200 flex-1 text-center">
+                    Weight:{" "}
+                    {data.weight && formatMeasurement(data.weight / 10, "kg")}
+                  </p>
+                </div>
               </div>
-            )}
-          </motion.div>
-        </motion.div>
 
-        <span className="font-bold px-1 rounded-md my-5 uppercase">
-          {pokemon.name}
-        </span>
-        <div className="flex gap-5">
-          {data &&
-            data.types &&
-            data.types.map((type, index) => (
-              <Type key={index} typeName={type.type.name} />
-            ))}
+              <div className="flex gap-4 m-4 w-full px-4">
+                {pokemon &&
+                  pokemon.types &&
+                  pokemon.types.map((type, index) => (
+                    <Type key={index} typeName={type} />
+                  ))}
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      </Card>
+    </Col>
   );
 };
 

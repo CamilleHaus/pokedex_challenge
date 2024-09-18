@@ -2,4 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+.custom-modal .ant-modal-header {
+    @apply py-2; /* Cor do cabeçalho */
+  }
+  
+  .custom-modal .ant-modal-title {
+    @apply text-zinc-800; /* Cor do título */
+  }
 
+  
