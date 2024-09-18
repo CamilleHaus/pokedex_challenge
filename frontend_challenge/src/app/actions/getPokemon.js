@@ -1,39 +1,24 @@
 "use server";
 
-export async function getPokemon({ query, page = 1, limit = 1000 }) {
-  let apiURL = `https://pokeapi.co/api/v2/pokemon?limit=${limit}&offset=${
-    (page - 1) * 24
-  }`;
+export async function getPokemon({ query, page = 1 }) {
+  const limit = 24; // Definindo o limite fixo para 24 Pokémon por página
+  const offset = (page - 1) * limit;
+  const apiURL = `https://pokeapi.co/api/v2/pokemon?limit=${limit}&offset=${offset}`;
 
   try {
     const response = await fetch(apiURL);
     const data = await response.json();
 
     if (query) {
-      const filteredPokemon = data.results.filter((pokemon) =>
-        pokemonNameStartsWithQuery(pokemon.name, query.toLowerCase())
+      // Filtra os Pokémon que começam com a query e limita a 24 resultados
+      return data.results.filter((pokemon) =>
+        pokemon.name.toLowerCase().startsWith(query.toLowerCase())
       );
-
-      return filteredPokemon.slice(0, 24);
     } else {
-      return data.results.slice(0, 24);
+      return data.results;
     }
   } catch (error) {
-    console.log(error);
-    return null;
-  }
-}
-
-function pokemonNameStartsWithQuery(name, query) {
-  return name.toLowerCase().startsWith(query);
-}
-
-export async function fetchPokemon({ page = 1, search }) {
-  try {
-    const pokemonData = await getPokemon({ query: search, page});
-    return pokemonData;
-  } catch (error) {
-    console.log(error);
-    return null;
+    console.error(error);
+    return [];
   }
 }
