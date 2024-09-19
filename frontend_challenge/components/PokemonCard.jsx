@@ -1,14 +1,15 @@
-import { useEffect, useState } from "react";
-import Image from "next/image";
 import Type from "./Type";
-import { Card, Col } from "antd";
-
-export const formatPokemonNumber = (number) => {
-  return `#${String(number).padStart(4, "0")}`;
-};
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import { Card, Col, Spin } from "antd";
+import { formatPokemonNumber } from "../utils/formatPokemonNumber";
+import { formatMeasurement } from "../utils/formatMeasurement";
 
 const PokemonCard = ({ pokemon }) => {
   const [data, setData] = useState(null);
+
+  const pokemonImageUrl =
+    "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/";
 
   const getPokemonNumberFromUrl = (url) => {
     const matches = url.match(/\/(\d+)\/$/);
@@ -26,7 +27,6 @@ const PokemonCard = ({ pokemon }) => {
         setData(fetchedData);
       } catch (error) {
         console.log(error);
-        // You can set data to null or show an error message here if needed
       }
     };
 
@@ -34,35 +34,29 @@ const PokemonCard = ({ pokemon }) => {
   }, [pokemon.url]);
 
   if (!data) {
-    return <p>Loading...</p>;
+    return <Spin />;
   }
 
   const pokemonNumber = getPokemonNumberFromUrl(pokemon.url);
 
-  const formatMeasurement = (value, unit) => {
-    return `${value} ${unit}`;
-  };
-
-  console.log(pokemon);
-
   return (
     <Col className="mb-4">
-      <Card className="bg-zinc-100 p-0">
-        <div className="flex items-center justify-center flex-col">
-          <div className="border border-b rounded-md w-full flex flex-col items-center">
-            <div className=" w-full flex justify-center items-center bg-zinc-50">
+      <Card className="bg-zinc-100 h-full">
+        <div className="flex flex-col items-center justify-center h-full">
+          <div className="w-full border border-b rounded-md flex flex-col items-center flex-1">
+            <div className="w-full flex justify-center items-center bg-zinc-50">
               <Image
-                src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/${pokemonNumber}.png`}
+                src={`${pokemonImageUrl}${pokemonNumber}.png`}
                 width={220}
                 height={150}
                 alt="Pokemon Image"
               />
             </div>
             <div className="flex flex-col items-center justify-center bg-white w-full">
-              <p className="py-2 uppercase font-bold bg-gray-800 text-white w-full text-center">
+              <p className="py-2 uppercase font-bold bg-gray-800 text-primary w-full text-center">
                 {pokemon.name}
               </p>
-              <div className="text-white flex flex-col gap-2 w-full px-4">
+              <div className="text-primary flex flex-col gap-2 w-full px-4">
                 <div className="flex flex-col">
                   <div className="flex justify-between py-2 text-lg">
                     <h3 className="font-bold text-black">Abilities</h3>
@@ -82,14 +76,14 @@ const PokemonCard = ({ pokemon }) => {
                       ))}
                   </div>
                 </div>
-                <div className="flex text-black justify-between w-full gap-3">
+                <div className="flex text-black justify-between w-full gap-3 lg:items-center">
                   <p className="py-2 rounded-md border border-zinc-200 flex-1 text-center">
-                    Height:{" "}
-                    {data.height && formatMeasurement(data.height / 10, "m")}
+                    Height: {data.height && formatMeasurement(data.height / 10)}
+                    m
                   </p>
                   <p className="py-2 rounded-md border border-zinc-200 flex-1 text-center">
-                    Weight:{" "}
-                    {data.weight && formatMeasurement(data.weight / 10, "kg")}
+                    Weight: {data.weight && formatMeasurement(data.weight / 10)}
+                    kg
                   </p>
                 </div>
               </div>

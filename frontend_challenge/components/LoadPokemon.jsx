@@ -1,32 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import PokemonCard, { formatPokemonNumber } from "./PokemonCard";
 import Type from "./Type";
-import { Button, Modal, Select, Pagination, Table } from "antd";
 import Image from "next/image";
-formatPokemonNumber;
-
-const pokemonTypes = [
-  { value: "", label: "Todos os tipos" },
-  { value: "fire", label: "Fire" },
-  { value: "grass", label: "Grass" },
-  { value: "water", label: "Water" },
-  { value: "electric", label: "Electric" },
-  { value: "poison", label: "Poison" },
-  { value: "flying", label: "Flying" },
-  { value: "ice", label: "Ice" },
-  { value: "fighting", label: "Fighting" },
-  { value: "ground", label: "Ground" },
-  { value: "psychic", label: "Psychic" },
-  { value: "bug", label: "Bug" },
-  { value: "rock", label: "Rock" },
-  { value: "ghost", label: "Ghost" },
-  { value: "dragon", label: "Dragon" },
-  { value: "dark", label: "Dark" },
-  { value: "steel", label: "Steel" },
-  { value: "fairy", label: "Fairy" },
-];
+import PokemonCard from "./PokemonCard";
+import { useEffect, useState } from "react";
+import { pokemonTypes } from "../data/pokemonTypes";
+import { Button, Modal, Select, Pagination, Table, Alert } from "antd";
 
 const columns = [
   {
@@ -34,12 +13,6 @@ const columns = [
     dataIndex: "name",
     key: "name",
     render: (text) => <a className="uppercase">{text}</a>,
-  },
-  {
-    title: "Number",
-    dataIndex: "number",
-    key: "number",
-    render: (number) => formatPokemonNumber(number), // Formata o número dos Pokémons
   },
   {
     title: "Types",
@@ -69,33 +42,28 @@ const LoadPokemon = () => {
   useEffect(() => {
     const getPokemonData = async () => {
       const limit = 1000;
+      setLoading(true);
+
       try {
-        setLoading(true);
         const response = await fetch(
           `https://pokeapi.co/api/v2/pokemon?limit=${limit}`
         );
-        if (!response.ok) {
-          throw new Error("Erro ao buscar os dados");
-        }
-
         const data = await response.json();
+
         const detailedPokemon = await Promise.all(
           data.results.map(async (poke) => {
-            const pokeDetails = await fetch(poke.url);
-            const details = await pokeDetails.json();
+            const details = await (await fetch(poke.url)).json();
             return {
               ...poke,
               types: details.types.map((typeInfo) => typeInfo.type.name),
-              key: poke.name, // Adiciona uma chave única
-              number: details.id,
-              tags: [], // Adicione tags conforme necessário
             };
           })
         );
+
         setPokemon(detailedPokemon);
-        setFilteredPokemon(detailedPokemon); // Inicializar a lista filtrada com todos os Pokémon
+        setFilteredPokemon(detailedPokemon);
       } catch (error) {
-        console.log(error);
+        console.log("Erro ao buscar os dados:", error);
       } finally {
         setLoading(false);
       }
@@ -112,7 +80,7 @@ const LoadPokemon = () => {
       return matchesType;
     });
     setFilteredPokemon(newFilteredPokemon);
-    setPage(1); // Resetar para a primeira página após aplicar os filtros
+    setPage(1);
   };
 
   const startIndex = (page - 1) * pageSize;
@@ -144,17 +112,35 @@ const LoadPokemon = () => {
 
   return (
     <>
+      <Alert
+        message="Como usar a Pokedéx?"
+        description={
+          <span>
+            Para buscar por um tipo específico dos Pokémons, use o botão{" "}
+            <span className="font-bold">Filtrar</span>
+          </span>
+        }
+        type="info"
+        closable
+        showIcon
+      />
       <div className="flex justify-center w-full mb-5">
-        <div className="py-3 w-full flex justify-between items-center">
-          <div className="flex justify-center">
-            <Button className="mr-4 py-5" onClick={() => setViewMode("card")}>
+        <div className="py-3 w-full flex justify-between items-center max-sm:flex-col gap-4 max-sm:items-end">
+          <div className="flex justify-center max-sm:gap-4 max-sm:w-full">
+            <Button
+              className="mr-4 max-sm:m-0 py-5 max-sm:flex-1"
+              onClick={() => setViewMode("card")}
+            >
               Exibir como Cards
             </Button>
-            <Button onClick={() => setViewMode("table")} className="mr-4 py-5">
+            <Button
+              onClick={() => setViewMode("table")}
+              className="mr-4 py-5 max-sm:m-0 max-sm:flex-1"
+            >
               Exibir como Tabela
             </Button>
           </div>
-          <Button className="py-5 text-lg" onClick={showModal}>
+          <Button className="py-5 text-lg max-sm:pl-8" onClick={showModal}>
             Filtrar
             <Image
               src="/pokeball.svg"
@@ -164,6 +150,7 @@ const LoadPokemon = () => {
             />
           </Button>
         </div>
+
         <Modal
           title="Selecione o tipo de Pokémon"
           open={isModalOpen}
@@ -205,15 +192,16 @@ const LoadPokemon = () => {
         <Table
           columns={columns}
           dataSource={currentPokemon}
-          pagination={false} // Desativa a paginação interna da tabela
+          pagination={false}
+          loading={loading}
         />
       )}
 
-      <div className="w-full flex items-center justify-center m-5">
+      <div className="w-full flex items-center justify-center m-5 max-sm:mx-0">
         <Pagination
           current={page}
           pageSize={pageSize}
-          total={filteredPokemon.length} // Define o total para a lista filtrada
+          total={filteredPokemon.length}
           onChange={handlePageChange}
           showSizeChanger={false}
         />
@@ -223,4 +211,3 @@ const LoadPokemon = () => {
 };
 
 export default LoadPokemon;
-

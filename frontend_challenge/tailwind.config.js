@@ -7,5 +7,12 @@ module.exports = {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./node_modules/antd/es/**"
   ],
+  theme: {
+    extend: {
+      colors: {
+        "primary": "#FFFFFF",
+      }
+    }
+  },
   plugins: [],
 };
